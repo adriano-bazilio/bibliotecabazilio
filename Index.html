@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIBLIOTECA BAZILIO</title>
+
+<script src="https://unpkg.com/@zxing/library@0.19.1"></script>
+
+<style>
+body{
+  font-family: Arial;
+  background:#dcdcdc;
+  text-align:center;
+  padding:20px;
+}
+
+.container{
+  background:white;
+  max-width:420px;
+  margin:auto;
+  padding:20px;
+  border-radius:8px;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+
+h2{
+  background:#2f4f4f;
+  color:white;
+  padding:10px;
+}
+
+video{
+  width:100%;
+}
+
+button{
+  padding:10px 20px;
+  margin-top:15px;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>BIBLIOTECA BAZILIO</h2>
+<video id="video"></video>
+<br>
+<button onclick="iniciar()">Escanear ISBN</button>
+<div id="status"></div>
+</div>
+
+<script>
+
+let codeReader;
+
+async function iniciar(){
+  document.getElementById("status").innerText="Abrindo câmera...";
+
+  codeReader = new ZXing.BrowserMultiFormatReader();
+
+  const devices = await codeReader.listVideoInputDevices();
+  const deviceId = devices[0].deviceId;
+
+  codeReader.decodeFromVideoDevice(deviceId, 'video', async (result, err) => {
+    if(result){
+      const isbn = result.text;
+      document.getElementById("status").innerText="ISBN: "+isbn;
+      codeReader.reset();
+
+      await enviarParaBackend(isbn);
+    }
+  });
+}
+
+async function enviarParaBackend(isbn){
+
+  const response = await fetch("COLE_AQUI_SUA_URL_WEBAPP", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ isbn: isbn })
+  });
+
+  const data = await response.json();
+
+  alert(JSON.stringify(data));
+}
+
+</script>
+
+</body>
+</html>
